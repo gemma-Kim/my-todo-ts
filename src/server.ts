@@ -9,7 +9,7 @@ const prod: boolean = process.env.NODE_ENV === 'production';
 const port = prod ? process.env.PORT : 3065;
 const server = http.createServer(app);
 
-async () => {
+const start = async () => {
   try {
     server.listen(port, (): void => {
       console.log(`Server is running on PORT ${port}`);
@@ -20,6 +20,8 @@ async () => {
     await prisma.$disconnect();
   }
 }
+
+start();
 
 export {
   prod,
