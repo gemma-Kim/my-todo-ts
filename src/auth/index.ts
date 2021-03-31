@@ -3,6 +3,8 @@ import prisma from '../models';
 import local from './local'
 
 export default () => {
+  local();
+
   passport.serializeUser((user, done) => {
     return done(null, user.id);
   });
@@ -12,9 +14,6 @@ export default () => {
       const user = await prisma.users.findUnique({
         where: { id }
       })
-      if (!user) {
-        return done(new Error('no user'));
-      }
       return done(null, user);
     } catch (err) {
       console.error(err)
@@ -22,5 +21,4 @@ export default () => {
     }
   });
 
-  local();
 }

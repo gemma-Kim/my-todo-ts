@@ -1,22 +1,32 @@
-import prisma from '../models';
+import * as bcrypt from 'bcrypt';
 import * as passport from 'passport'
-import { Strategy } from "passport-local";
+import prisma from '../models';
+import { Strategy } from "passport-local"
 
 export default () => {
-  passport.use('local',
-    new Strategy({ session: true }, (email, password, done) => {
-      try {
-        const user = prisma.users.findUnique({
-          where: {
-            email: email,
-          }
-        })
-        if (!user) return done(null, false, { message: "invalid user" })
-        //비밀번호 매칭 확인
-        done(null, user)
-      } catch (err) {
-        done(err)
-      }
-    })
+  passport.use( new Strategy({ 
+    usernameField: 'email',
+    passwordField: 'inputPW',
+    session: true,
+  }, async (email, inputPW, done) => {
+    try {
+      const user = await prisma.users.findUnique({
+        where: {
+          email: email,
+        }
+      })
+
+      if (!user) return done(null, false, { message: "invalid user" })
+
+      const { id, password: hashedPW } = user
+      await bcrypt.compare(inputPW, hashedPW, (err, result) => {
+        if (!result) return done(null, false, { message: "wrong password" })
+        return done(null, user)
+      })
+
+    } catch (err) {
+      done(err)
+    }
+  })
   )
 }
