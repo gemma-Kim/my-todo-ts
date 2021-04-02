@@ -1,15 +1,4 @@
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -47,23 +36,49 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var express_1 = require("express");
-var models_1 = require("../models");
-var middleware_1 = require("./middleware");
-var todoRouter = express_1.Router();
-// add todo list
-todoRouter.post('', middleware_1.isLoggedIn, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var newTodo;
+exports.modifyTodo = exports.addTodo = exports.getUserTodo = void 0;
+var index_1 = require("./index");
+var getUserTodo = function (userId) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0: return [4 /*yield*/, models_1.todoModel.addTodo(__assign({}, req.body))];
-            case 1:
-                newTodo = _a.sent();
-                if (newTodo) {
-                    res.status(200).json(__assign({}, newTodo));
+        return [2 /*return*/, index_1["default"].todo_lists.findMany({
+                where: {
+                    user_id: userId,
+                    deleted_is: false
+                },
+                select: {
+                    id: true,
+                    content: true
                 }
-                return [2 /*return*/];
+            })];
+    });
+}); };
+exports.getUserTodo = getUserTodo;
+var addTodo = function (inputData) {
+    var userId = inputData.userId, list_id = inputData.list_id, content = inputData.content;
+    return index_1["default"].todo_lists.create({
+        data: {
+            user_id: userId,
+            list_id: list_id,
+            content: content
+        },
+        select: {
+            id: true,
+            list_id: true,
+            content: true
         }
     });
-}); });
-exports["default"] = todoRouter;
+};
+exports.addTodo = addTodo;
+var modifyTodo = function (inputData) {
+    var todoId = inputData.id, newListId = inputData.list_id, newContent = inputData.content;
+    return index_1["default"].todo_lists.update({
+        where: {
+            id: todoId
+        },
+        data: {
+            list_id: newListId,
+            content: newContent
+        }
+    });
+};
+exports.modifyTodo = modifyTodo;

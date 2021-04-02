@@ -1,8 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import * as bcrypt from 'bcrypt';
 import * as passport from 'passport';
-import prisma from '../models';
+import prisma, { userModel, todoModel } from '../models';
 import { isLoggedIn, isNotLoggedIn } from './middleware';
+// import { validUser } from '../validate'
 
 const userRouter = Router();
 
@@ -14,27 +15,20 @@ const userRouter = Router();
 interface ISignupData {
   email: string,
   password: string,
-  nickname: string
 }
 
 userRouter.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email: inputEmail, password: inputPW, nickname: inputNickname }: ISignupData = req.body;
-    const user = await prisma.users.findUnique({
-      where: {
-        email: inputEmail,
-      },
-    });
+    const user = await userModel.findUniqueUser(req.body)
     if (user) {
-      return res.status(403).json( { 'message': '이미 존재하는 사용자입니다.' })
+      return res.status(403).json({ 'message': '이미 존재하는 사용자 이메일 입니다.' })
     }
+    // validate email, password 
+    // code ----->
+    const { email: inputEmail, password: inputPW }: ISignupData = req.body;
     const hashedPW = await bcrypt.hash(inputPW, 12);
-    const newUser = await prisma.users.create({
-      data: {
-        email: inputEmail,
-        password: hashedPW,
-      }
-    });
+
+    const newUser = await userModel.createNewUser(inputEmail, hashedPW);
     
     return res.status(200).json(newUser);
   } catch (err) {
@@ -57,11 +51,8 @@ userRouter.post('/login', isNotLoggedIn, (req, res, next) => {
         if (loginErr) {
           return next(loginErr);
         }
-        const userInfo = await prisma.users.findUnique({
-          where: { id: user.id },
-          select: { id: true },
-        })
-        
+        const userInfo = await userModel.findUniqueUser( { id: user.id } )
+
         return res.status(200).json( { ...userInfo, 'message': 'login success' })
       } catch (err) {
         console.error(err);
@@ -78,26 +69,15 @@ userRouter.post('/logout', isLoggedIn, (req, res) => {
   });
 })
 
-// userRouter.get('/:id', isLoggedIn, async (req, res, next) => {
-//   try {
-//     const userInfo = await User.findOne({
-//       where: { id: req.params.id },
-//       attributes: ['id', 'nickname'],
-//       include: [{
-//         model: Todo,
-//         attributes: ['id', 'body'],
-//         order: ['createdAt', 'DESC'],
-//       }],
-//     })
-//     if (!userInfo) {
-//       return res.status(404).send('no user');
-//     }
-//     const jsonUser = userInfo.toJSON() as User;
-//     return res.json(jsonUser);
-//   } catch (err) {
-//     console.error(err);
-//     next(err);
-//   }
-// })
+userRouter.get('/:id', isLoggedIn, async (req, res, next) => {
+  try {
+    const paramsId = Number(req.params.id)
+    const todoLists = await todoModel.getUserTodo(paramsId);
+    return res.json(todoLists)
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+})
 
 export default userRouter

@@ -41,6 +41,7 @@ var models_1 = require("../models");
 var local_1 = require("./local");
 exports["default"] = (function () {
     passport.serializeUser(function (user, done) {
+        console.log('와아');
         return done(null, user.id);
     });
     passport.deserializeUser(function (id, done) { return __awaiter(void 0, void 0, void 0, function () {
@@ -49,6 +50,7 @@ exports["default"] = (function () {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
+                    console.log('하하');
                     return [4 /*yield*/, models_1["default"].users.findUnique({
                             where: { id: id }
                         })];

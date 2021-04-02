@@ -52,33 +52,25 @@ var bcrypt = require("bcrypt");
 var passport = require("passport");
 var models_1 = require("../models");
 var middleware_1 = require("./middleware");
+// import { validUser } from '../validate'
 var userRouter = express_1.Router();
 userRouter.post('/signup', function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, inputEmail, inputPW, inputNickname, user, hashedPW, newUser, err_1;
+    var user, _a, inputEmail, inputPW, hashedPW, newUser, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 4, , 5]);
-                _a = req.body, inputEmail = _a.email, inputPW = _a.password, inputNickname = _a.nickname;
-                return [4 /*yield*/, models_1["default"].users.findUnique({
-                        where: {
-                            email: inputEmail
-                        }
-                    })];
+                return [4 /*yield*/, models_1.userModel.findUniqueUser(req.body)];
             case 1:
                 user = _b.sent();
                 if (user) {
-                    return [2 /*return*/, res.status(403).json({ 'message': '이미 존재하는 사용자입니다.' })];
+                    return [2 /*return*/, res.status(403).json({ 'message': '이미 존재하는 사용자 이메일 입니다.' })];
                 }
+                _a = req.body, inputEmail = _a.email, inputPW = _a.password;
                 return [4 /*yield*/, bcrypt.hash(inputPW, 12)];
             case 2:
                 hashedPW = _b.sent();
-                return [4 /*yield*/, models_1["default"].users.create({
-                        data: {
-                            email: inputEmail,
-                            password: hashedPW
-                        }
-                    })];
+                return [4 /*yield*/, models_1.userModel.createNewUser(inputEmail, hashedPW)];
             case 3:
                 newUser = _b.sent();
                 return [2 /*return*/, res.status(200).json(newUser)];
@@ -110,10 +102,7 @@ userRouter.post('/login', middleware_1.isNotLoggedIn, function (req, res, next) 
                         if (loginErr) {
                             return [2 /*return*/, next(loginErr)];
                         }
-                        return [4 /*yield*/, models_1["default"].users.findUnique({
-                                where: { id: user.id },
-                                select: { id: true }
-                            })];
+                        return [4 /*yield*/, models_1.userModel.findUniqueUser({ id: user.id })];
                     case 1:
                         userInfo = _a.sent();
                         return [2 /*return*/, res.status(200).json(__assign(__assign({}, userInfo), { 'message': 'login success' }))];
@@ -134,25 +123,24 @@ userRouter.post('/logout', middleware_1.isLoggedIn, function (req, res) {
         res.send('success to logout');
     });
 });
-// userRouter.get('/:id', isLoggedIn, async (req, res, next) => {
-//   try {
-//     const userInfo = await User.findOne({
-//       where: { id: req.params.id },
-//       attributes: ['id', 'nickname'],
-//       include: [{
-//         model: Todo,
-//         attributes: ['id', 'body'],
-//         order: ['createdAt', 'DESC'],
-//       }],
-//     })
-//     if (!userInfo) {
-//       return res.status(404).send('no user');
-//     }
-//     const jsonUser = userInfo.toJSON() as User;
-//     return res.json(jsonUser);
-//   } catch (err) {
-//     console.error(err);
-//     next(err);
-//   }
-// })
+userRouter.get('/:id', middleware_1.isLoggedIn, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var paramsId, todoLists, err_3;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                paramsId = Number(req.params.id);
+                return [4 /*yield*/, models_1.todoModel.getUserTodo(paramsId)];
+            case 1:
+                todoLists = _a.sent();
+                return [2 /*return*/, res.json(todoLists)];
+            case 2:
+                err_3 = _a.sent();
+                console.error(err_3);
+                next(err_3);
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
 exports["default"] = userRouter;
