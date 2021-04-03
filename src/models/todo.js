@@ -69,16 +69,28 @@ var addTodo = function (inputData) {
     });
 };
 exports.addTodo = addTodo;
+// 목록을 바꾸던가. 내용을 바꾼던가. 둘 다 기능하도록
 var modifyTodo = function (inputData) {
     var todoId = inputData.id, newListId = inputData.list_id, newContent = inputData.content;
-    return index_1["default"].todo_lists.update({
-        where: {
-            id: todoId
-        },
-        data: {
-            list_id: newListId,
-            content: newContent
-        }
-    });
+    if (newListId && !newContent) {
+        return index_1["default"].todo_lists.update({
+            where: {
+                id: todoId
+            },
+            data: {
+                list_id: newListId
+            }
+        });
+    }
+    if (!newListId && !newContent)
+        return index_1["default"].todo_lists.update({
+            where: {
+                id: todoId
+            },
+            data: {
+                list_id: newListId,
+                content: newContent
+            }
+        });
 };
 exports.modifyTodo = modifyTodo;

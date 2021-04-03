@@ -1,10 +1,12 @@
 import prisma from './index';
+import * as bcrypt from 'bcrypt'
 
-const createNewUser = (email: string, password: string) => {
+const createNewUser = async (email: string, password: string) => {
+  const hashedPW = await bcrypt.hash(password, 12)
   return prisma.users.create({
     data: {
       email: email,
-      password: password,
+      password: hashedPW
     },
     select: { id: true }
   });

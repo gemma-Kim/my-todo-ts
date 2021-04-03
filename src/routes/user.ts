@@ -1,9 +1,8 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import * as bcrypt from 'bcrypt';
 import * as passport from 'passport';
 import prisma, { userModel, todoModel } from '../models';
 import { isLoggedIn, isNotLoggedIn } from './middleware';
-// import { validUser } from '../validate'
+import { convertToObject } from 'typescript';
 
 const userRouter = Router();
 
@@ -23,12 +22,12 @@ userRouter.post('/signup', async (req: Request, res: Response, next: NextFunctio
     if (user) {
       return res.status(403).json({ 'message': '이미 존재하는 사용자 이메일 입니다.' })
     }
+
+    const { email: inputEmail, password: inputPW }: ISignupData = req.body;
     // validate email, password 
     // code ----->
-    const { email: inputEmail, password: inputPW }: ISignupData = req.body;
-    const hashedPW = await bcrypt.hash(inputPW, 12);
 
-    const newUser = await userModel.createNewUser(inputEmail, hashedPW);
+    const newUser = await userModel.createNewUser(inputEmail, inputPW);
     
     return res.status(200).json(newUser);
   } catch (err) {
@@ -53,7 +52,7 @@ userRouter.post('/login', isNotLoggedIn, (req, res, next) => {
         }
         const userInfo = await userModel.findUniqueUser( { id: user.id } )
 
-        return res.status(200).json( { ...userInfo, 'message': 'login success' })
+        return res.status(200).json(userInfo)
       } catch (err) {
         console.error(err);
         next(err);

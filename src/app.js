@@ -7,7 +7,7 @@ var morgan = require("morgan");
 var expressSession = require("express-session");
 var cookieParser = require("cookie-parser");
 var passport = require("passport");
-var passport_1 = require("./passport");
+var auth_1 = require("./auth");
 var server_1 = require("./server");
 var routes_1 = require("./routes");
 dotenv.config();
@@ -16,7 +16,7 @@ var app = express();
 //express.static('uploads')
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(expressSession({
     resave: false,
     saveUninitialized: false,
@@ -28,7 +28,7 @@ app.use(expressSession({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-passport_1["default"]();
+auth_1["default"]();
 app.use(routes_1["default"]);
 app.use(cors);
 // middelewear

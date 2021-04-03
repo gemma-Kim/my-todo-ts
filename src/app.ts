@@ -5,18 +5,17 @@ import * as morgan from 'morgan';
 import * as expressSession from 'express-session'
 import * as cookieParser from 'cookie-parser'
 import * as passport from 'passport';
-import passportConfig from './passport';
+import passportConfig from './auth';
 import { prod } from './server';
 import router from './routes';
 
 dotenv.config();
 const app = express();
-
 // basic middlewear
 //express.static('uploads')
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: false }));
 app.use(expressSession({
   resave: false,
   saveUninitialized: false,
