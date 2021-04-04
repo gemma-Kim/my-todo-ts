@@ -1,24 +1,22 @@
 import app from '../app';
-import { json, Request, Response } from 'express';
-import prisma, { userModel } from '../models'
-import { expect } from 'chai';
+import prisma from '../models'
 import * as request from 'supertest';
-import * as superagent from 'superagent';
-import { isLoggedIn, isNotLoggedIn } from '../routes/middleware';
 
-const agent = superagent.agent();
+describe('Success User API', () => {
+  let cookies: string;
+  const userData = {
+    'email': 'testsignup@test.com',
+    'password': '12345678'
+  }
 
-describe('POST signup api', () => {
   after(async () => {
     await prisma.$queryRaw('DELETE FROM users ORDER BY id DESC LIMIT 1;')
   })
-  it('success: signup', (done) => {
+  
+  it('POST signup', (done) => {
     request(app)
       .post('/users/signup')
-      .send({
-        'email': 'testsignup@test.com',
-        'password': '12345678'
-      })
+      .send(userData)
       .expect(200)
       .end((err, res) => {
         if (err) {
@@ -28,28 +26,28 @@ describe('POST signup api', () => {
         }
       })
   })
-})
 
-describe('POST login api', () => {
+  // 로그인 실패사례 추가: 이메일, 패스워드
 
-  const userData = {
-    "email": "testuser@test.com",
-    "password": "12345678"
-  }
-  before(async () => {
-    await userModel.createNewUser(userData.email, userData.password)
-  })
-  after(async () => {
-    await prisma.users.delete({
-      where: {
-        email: userData.email
-      }
-    })
-  })
-  it('success: login', (done) => {
+  it('POST login', (done) => {
     request(app)
       .post('/users/login')
       .send(userData)
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          done(err)
+        } else {
+          cookies = res.headers["set-cookie"].pop().split(";")[0];
+          done();
+        }
+      })
+  })
+
+  it('POST logout', (done) => {
+    request(app)
+      .post('/users/logout')
+      .set('Cookie', [cookies])
       .expect(200)
       .end((err, res) => {
         if (err) {
@@ -59,6 +57,5 @@ describe('POST login api', () => {
         }
       })
   })
-  
-})
 
+})
