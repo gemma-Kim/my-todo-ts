@@ -1,14 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
-import { userModel, todoModel } from '../models';
+import { userModel, todoModel, listModel } from '../models';
 import { isLoggedIn, isNotLoggedIn } from './middleware';
 import * as passport from 'passport';
 
 const userRouter = Router();
-
-userRouter.get('/', isLoggedIn, (req, res) => {
-  const user = req
-  return res.json({ ...user, password: null });
-});
 
 interface ISignupData {
   email: string,
@@ -34,7 +29,7 @@ userRouter.post('/signup', async (req: Request, res: Response, next: NextFunctio
           return res.status(400).json({ 'message': '이메일 형식이 올바르지 않습니다.'})
         }
         if (this.pw.length < 8) {
-          return res.status(400).json( { 'message': '패스워드는 8자 이상이어야 합니다.'})
+          return res.status(400).json({ 'message': '패스워드는 8자 이상이어야 합니다.'})
         }
         return { email: this.email, password: this.pw }
       }
@@ -42,7 +37,8 @@ userRouter.post('/signup', async (req: Request, res: Response, next: NextFunctio
     const userData: UserData = new UserData(inputEmail, inputPW)
     userData.signup_isvalid();
     const newUser = await userModel.createNewUser(userData.email, userData.pw);
-    return res.status(200).json( newUser );
+    const listId = await listModel.addList(newUser.id, 'Basic', true);
+    return res.status(200).json( { user_id: newUser.id, list_id: listId.id } );
   } catch (err) {
     console.error(err);
     next(err);
@@ -74,6 +70,7 @@ userRouter.post('/login', isNotLoggedIn, (req, res, next) => {
   })(req, res, next);
 });
 
+// logout
 userRouter.post('/logout', isLoggedIn, (req, res) => {
   req.logout();
   req.session.destroy(() => {
@@ -81,11 +78,10 @@ userRouter.post('/logout', isLoggedIn, (req, res) => {
   });
 })
 
-userRouter.get('/:id', isLoggedIn, async (req, res, next) => {
+// get user todos 
+userRouter.get('/:user_id/todos', isLoggedIn, async (req, res, next) => {
   try {
-    const paramsId = Number(req.params.id)
-    const todoLists = await todoModel.getUserTodo(paramsId);
-    return res.json(todoLists)
+    
   } catch (err) {
     console.error(err);
     next(err);
