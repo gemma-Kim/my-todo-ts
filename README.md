@@ -1,1 +1,1 @@
-# To do List Mini Project with TypeScript
+# To do List Project with TypeScript
