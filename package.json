@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "ts-mocha ./src/test/*.test.ts",
-    "dev:run": "tsc-watch --onSuccess \"node dist/server.js\" ",
+    "dev": "tsc-watch --onSuccess \"node ./src/dist/server.js\" ",
     "build": "npx tsc ./src/**/*.ts"
   },
   "repository": {

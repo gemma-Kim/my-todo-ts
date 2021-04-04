@@ -2,3 +2,5 @@
 *.sql
 prisma/*
 src/dist/*
+node_modules
+prisma
