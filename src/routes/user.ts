@@ -26,10 +26,10 @@ userRouter.post('/signup', async (req: Request, res: Response, next: NextFunctio
       public signup_isvalid(): object {
         const email_validator = /^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-Za-z0-9\-]+/;
         if (email_validator.test(this.email) === false) {    
-          return res.status(400).json({ 'message': '이메일 형식이 올바르지 않습니다.'})
+          return res.status(400).json({ 'message': '이메일 형식이 올바르지 않습니다.' })
         }
         if (this.pw.length < 8) {
-          return res.status(400).json({ 'message': '패스워드는 8자 이상이어야 합니다.'})
+          return res.status(400).json({ 'message': '패스워드는 8자 이상이어야 합니다.' })
         }
         return { email: this.email, password: this.pw }
       }
@@ -79,9 +79,19 @@ userRouter.post('/logout', isLoggedIn, (req, res) => {
 })
 
 // get user todos 
-userRouter.get('/:user_id/todos', isLoggedIn, async (req, res, next) => {
+userRouter.get('/:user_id/todos?', async (req, res, next) => {
   try {
-    
+    if (req.params.user_id && req.query.offset && req.query.limit) {
+      if (req.query.offset > req.query.limit) {
+        throw new Error('limit should be greater than offset')
+      }
+      const user = await userModel.findUniqueUser({id: Number(req.params.user_id)})
+      if (!user) {
+        throw new Error('invalid user')
+      }
+      const todoData = await todoModel.getUserTodo(Number(req.params.user_id), Number(req.query.offset), Number(req.query.limit))
+      return res.status(200).json( todoData[0] )
+    }
   } catch (err) {
     console.error(err);
     next(err);

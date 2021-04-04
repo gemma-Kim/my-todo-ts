@@ -6,8 +6,8 @@ import listRouter from './todo';
 
 const router = Router();
 
-router.use('/users', userRouter);
-router.use('/todos', todoRouter);
-router.use('/lists', listRouter);
+router.use('/user', userRouter);
+router.use('/todo', todoRouter);
+router.use('/list', listRouter);
 
 export default router

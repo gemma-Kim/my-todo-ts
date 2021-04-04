@@ -1,6 +1,7 @@
 import prisma from './index';
 import * as bcrypt from 'bcrypt'
 
+
 const createNewUser = async (email: string, password: string) => {
   const hashedPW = await bcrypt.hash(password, 12)
   return prisma.users.create({
@@ -16,7 +17,6 @@ interface IinputUserData {
   id?: number | undefined
   email?: string | undefined
 }
-
 const findUniqueUser = (inputData: IinputUserData) => {
   const { id: inputId, email: inputEmail } = inputData;
   const user = prisma.users.findUnique({
@@ -31,7 +31,6 @@ const findUniqueUser = (inputData: IinputUserData) => {
   }
   return false
 }
-
 
 export {
   createNewUser,

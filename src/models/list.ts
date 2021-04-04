@@ -3,24 +3,18 @@ import prisma from '../models'
 
 const listRouter = Router();
 
-// 
-const userDefaultList = (userId: number) => {
-  return prisma.todo_lists.findMany({
-    where: {
-      id: userId
-    },
-    include: {
-      lists: true
-    }
-  })
+// get list
+const getUserList = (user_id: number) => {
+  
 }
-// 리스트 추가
-const addList = (userId: number, title: string, basic?: boolean | undefined) => {
+
+// add new list
+const addList = (user_id: number, title: string, basic?: boolean | undefined) => {
   if (basic) {
     return prisma.lists.create({
       data: {
-        user_id: userId,
-        title: title,
+        user_id,
+        title,
         default: true
       },
       select: { id: true }
@@ -28,18 +22,19 @@ const addList = (userId: number, title: string, basic?: boolean | undefined) => 
   }
   return prisma.lists.create({
     data: {
-      user_id: userId,
-      title: title,
+      user_id,
+      title,
     },
     select: { id: true }
   })
 }
 
-const deleteList = (userId: number, listId: number) => {
+const deleteList = (user_id: number, list_id: number) => {
   return prisma.lists.delete
 }
 
 export {
   addList,
-  userDefaultList
+  getUserList,
+  // userDefaultList
 }

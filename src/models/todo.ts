@@ -23,16 +23,37 @@ const addTodo = (inputData: IinputTodoData) => {
   })
 }
 
-const getUserTodo = async (userId: number) => {
-  return prisma.todo_lists.findMany({
-    where: { 
-      user_id: userId,
-      is_deleted: false,
+const getUserTodo = async (userId: number, offset: number, limit: number) => {
+  return prisma.users.findMany({
+    where: {
+      id: userId,
     },
     select: {
       id: true,
-      content: true,
-    }
+      lists: {
+        select: {
+          id: true,
+          title: true,
+        }
+      },
+      todo_lists: {
+        select: {
+          id: true,
+          list_id: true,
+          content: true,
+        },
+        where: {
+          is_deleted: false,
+          lists: {
+            default: true
+          }
+        },
+        orderBy: {
+          created_at: 'desc',
+        }
+        
+      }
+    },     
   })
 }
 
