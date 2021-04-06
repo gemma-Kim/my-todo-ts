@@ -1,18 +1,18 @@
 import * as express from 'express';
 import * as dotenv from 'dotenv';
 import * as cors from 'cors';
-import * as morgan from 'morgan';
-import * as expressSession from 'express-session'
-import * as cookieParser from 'cookie-parser'
+import * as logger from 'morgan';
+import * as expressSession from 'express-session';
+import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
-import passportConfig from './auth';
-import { prod } from './server';
+import passportSetting from './auth';
 import router from './routes';
+import { prod } from './server';
 
 dotenv.config();
 const app = express();
+
 // basic middlewear
-//express.static('uploads')
 app.use(express.json());
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.urlencoded({ extended: false }));
@@ -28,16 +28,17 @@ app.use(expressSession({
 
 app.use(passport.initialize());
 app.use(passport.session());
-passportConfig();
+passportSetting();
 
 app.use(router);
 app.use(cors);
-// middelewear
+
+// additional middelewear
 if (prod) {
-  app.use(morgan('combined'));
+  app.use(logger('combined'));
 
 } else {
-  app.use(morgan('dev'))
+  app.use(logger('dev'))
 }
 
 export default app;

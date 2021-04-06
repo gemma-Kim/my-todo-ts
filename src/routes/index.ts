@@ -3,7 +3,6 @@ import userRouter from './user';
 import todoRouter from './todo';
 import listRouter from './todo';
 
-
 const router = Router();
 
 router.use('/user', userRouter);

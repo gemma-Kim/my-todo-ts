@@ -1,18 +1,21 @@
-import { Router } from 'express'
+import { Router, Request, Response, NextFunction } from 'express'
 import { isLoggedIn } from './middleware';
 import { listModel } from '../models'
 
 const listRouter = Router();
 
-// 리스트 조회
-
-// 리스트 추가
-listRouter.post('', isLoggedIn, async (req, res, next) => {
+// add list
+listRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
 
 })
 
-// 리스트 삭제
-listRouter.delete('/', isLoggedIn, async (req, res, next) => {
+// modify list : title or default
+listRouter.patch('/:list_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
+
+})
+
+// remove or delete list
+listRouter.delete('/:list_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
 
 })
 

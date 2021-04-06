@@ -16,7 +16,7 @@ export default () => {
         }
       })
       
-      if (!user) return done(null, false, { message: "invalid user" })
+      if (!user) return done(null, false, { message: "존재하지 않는 사용자입니다." })
 
       const { password: hashedPW } = user
       
@@ -25,7 +25,7 @@ export default () => {
           console.error(err)
           return done(null, false, { message: "error"})
         }
-        if (!result) return done(null, false, { message: "wrong password" })
+        if (!result) return done(null, false, { message: "비밀번호가 잘못되었습니다." })
         return done(null, user)
       })      
       

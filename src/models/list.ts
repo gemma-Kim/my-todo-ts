@@ -9,26 +9,20 @@ const getUserList = (user_id: number) => {
 }
 
 // add new list
-const addList = (user_id: number, title: string, basic?: boolean | undefined) => {
+const addList = async (user_id: number, title: string, basic: boolean) => {
   if (basic) {
-    return prisma.lists.create({
+    return await prisma.lists.create({
       data: {
         user_id,
         title,
-        default: true
+        default: basic,
       },
       select: { id: true }
     })
   }
-  return prisma.lists.create({
-    data: {
-      user_id,
-      title,
-    },
-    select: { id: true }
-  })
 }
 
+// delete list
 const deleteList = (user_id: number, list_id: number) => {
   return prisma.lists.delete
 }
@@ -36,5 +30,4 @@ const deleteList = (user_id: number, list_id: number) => {
 export {
   addList,
   getUserList,
-  // userDefaultList
 }

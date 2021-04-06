@@ -4,18 +4,23 @@ import local from './local'
 
 export default () => {
   passport.serializeUser((user, done) => {
-    return done(null, user.id);
+    done(null, user.id);
   });
 
   passport.deserializeUser(async (id: number, done) => {
     try {
       const user = await prisma.users.findUnique({
-        where: { id }
+        where: { 
+          id 
+        },
+        select: {
+          id: true
+        }
       })
-      return done(null, user);
+      done(null, user);
     } catch (err) {
       console.error(err)
-      return done(err)
+      done(err)
     }
   });
   local();

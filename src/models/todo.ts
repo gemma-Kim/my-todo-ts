@@ -1,19 +1,13 @@
 import prisma from './index';
 
-
 interface IinputTodoData {
-  userId: number
-  listId: number
+  user_id: number
+  list_id: number
   content: string
 }
-const addTodo = (inputData: IinputTodoData) => {
-  const { userId, listId, content } = inputData
-  return prisma.todo_lists.create({
-    data: {
-      user_id: userId,
-      list_id: listId,
-      content: content,
-    },
+const addTodo = (data: IinputTodoData) => {  
+  return prisma.todos.create({
+    data,
     select: {
       id: true,
       list_id: true,
@@ -36,7 +30,7 @@ const getUserTodo = async (userId: number, offset: number, limit: number) => {
           title: true,
         }
       },
-      todo_lists: {
+      todos: {
         select: {
           id: true,
           list_id: true,
@@ -61,53 +55,56 @@ interface IModifyTodoData {
   id: number
   list_id?: number 
   content?: string
+  is_deleted?: boolean
 }
-const modifyTodo = (inputData: IModifyTodoData) => {
+const modifyTodo = (data: IModifyTodoData) => {
   try {
-    const { id } = inputData
-    return prisma.todo_lists.update({
+    const { id } = data
+    return prisma.todos.update({
       where: {
         id,
       },
       data: {
-        ...inputData,
+        ...data,
         updated_at: new Date()
       },
       select: {
-        content: ("content" in inputData ? true : false),
-        list_id: ("list_id" in inputData ? true : false),
+        id: true,
+        content: ("content" in data ? true : false),
+        list_id: ("list_id" in data ? true : false),
       }
     })
+
   } catch (err) {
-    
+    console.error(err)
   }
 }
 
 const deleteTodos = (todoIds: number[], is_deleted: boolean) => {
   // it's already removed
   if (is_deleted) {
-    return prisma.todo_lists.deleteMany({
+    return prisma.todos.deleteMany({
       where: {
         id: { in: todoIds },
-        is_deleted
       },
     })
+  } else {
+    // remove them
+    return prisma.todos.updateMany({
+      where: {
+        id: { in: todoIds },
+      },
+      data: {
+        is_deleted: true
+      }
+    })
   }
-  // remove them
-  return prisma.todo_lists.updateMany({
-    where: {
-      id: { in: todoIds },
-      is_deleted
-    },
-    data: {
-      is_deleted: is_deleted ? false : true
-    }
-  })
+  
 }
 
 export {
-  getUserTodo,
   addTodo,
+  getUserTodo,
   modifyTodo,
   deleteTodos,
 }

@@ -1,13 +1,12 @@
 import prisma from './index';
 import * as bcrypt from 'bcrypt'
 
-
 const createNewUser = async (email: string, password: string) => {
   const hashedPW = await bcrypt.hash(password, 12)
   return prisma.users.create({
     data: {
       email: email,
-      password: hashedPW
+      password: hashedPW,
     },
     select: { id: true }
   });
@@ -32,7 +31,17 @@ const findUniqueUser = (inputData: IinputUserData) => {
   return false
 }
 
+const deleteNewUser = (id: number) => {
+  return prisma.users.delete({
+    where: {
+      id
+    },
+    select: { id: true }
+  });
+}
+
 export {
   createNewUser,
-  findUniqueUser
+  findUniqueUser,
+  deleteNewUser
 }
