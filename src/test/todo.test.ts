@@ -50,7 +50,6 @@ describe('사용자 기본 리스트 조회', () => {
   })
 
   it('로그인 성공', done => {
-    
     request(app)
       .post('/user/login')
       .send(userData)

@@ -5,18 +5,18 @@ import { isLoggedIn } from './middleware';
 const todoRouter = Router();
 
 // get user todos 
-todoRouter.get('/todos?', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
+todoRouter.get('', async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (req.query.offset && req.query.limit) {
       if (req.query.offset > req.query.limit) {
         res.status(400).json('limit should be greater than offset')
       }
-      if (req.user) {
-        const user = await userModel.findUniqueUser({ id: req.user.id })
+      if (req.query.user_id) {
+        const user = await userModel.findUniqueUser({ id: Number(req.query.user_id) })
         if (!user) {
           res.status(400).json('invalid user')
         } else {
-          const todoData = await todoModel.getUserTodo(Number(req.user.id), Number(req.query.offset), Number(req.query.limit))
+          const todoData = await todoModel.getUserTodo(Number(req.query.user_id), Number(req.query.offset), Number(req.query.limit))
           res.status(200).json(todoData[0])
         }
       }
@@ -36,8 +36,9 @@ todoRouter.post('', async (req: Request, res: Response, next: NextFunction) => {
     const newTodo = await todoModel.addTodo(req.body)
     if (newTodo) {
       res.status(200).json(newTodo)
-    } res.status(400).json( {'message': 'no created new todo'})
-    
+    } else {
+      res.status(400).json( {'message': 'no created new todo'})
+    }
   } catch (err) {
     console.error(err);
     next(err);
@@ -45,7 +46,7 @@ todoRouter.post('', async (req: Request, res: Response, next: NextFunction) => {
 })
 
 // modify todo list
-todoRouter.patch(':todo_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
+todoRouter.patch('/:todo_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     // need 'user_id', (list_id or content or is_deleted) in req.body
     if ("content" in req.body && !req.body.content) {
