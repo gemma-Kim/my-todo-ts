@@ -5,6 +5,9 @@ import * as logger from 'morgan';
 import * as expressSession from 'express-session';
 import * as cookieParser from 'cookie-parser';
 import * as passport from 'passport';
+import * as swaggerJsdoc from 'swagger-jsdoc';
+import * as swaggerUi from 'swagger-ui-express';
+import * as swaggerOptions from './swagger';
 import passportSetting from './auth';
 import router from './routes';
 import { prod } from './server';
@@ -32,6 +35,10 @@ passportSetting();
 
 app.use(router);
 app.use(cors);
+app.use("/api-docs", 
+        swaggerUi.serve, 
+        swaggerUi.setup(swaggerJsdoc(swaggerOptions))
+        );
 
 // additional middelewear
 if (prod) {
