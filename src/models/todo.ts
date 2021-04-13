@@ -5,7 +5,7 @@ interface IinputTodoData {
   list_id: number
   content: string
 }
-const addTodo = (data: IinputTodoData) => {  
+const addTodo = (data: IinputTodoData) => {
   return prisma.todos.create({
     data,
     select: {

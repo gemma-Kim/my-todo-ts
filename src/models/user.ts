@@ -2,21 +2,25 @@ import prisma from './index';
 import * as bcrypt from 'bcrypt'
 
 const createNewUser = async (email: string, password: string) => {
-  const hashedPW = await bcrypt.hash(password, 12)
-  return await prisma.users.create({
-    data: {
-      email: email,
-      password: hashedPW,
-      lists: {
-        create: [
-          { 'title': 'Basic' }
-        ],
-      }
-    },
-    include: {
-      lists: true,
-    },
-  });
+  if (email && password) {
+    const hashedPW = await bcrypt.hash(password, 12)
+    return await prisma.users.create({
+      data: {
+        email: email,
+        password: hashedPW,
+        lists: {
+          create: [
+            { 'title': 'Basic' }
+          ],
+        }
+      },
+      include: {
+        lists: true,
+      },
+    });
+  } else {
+    return false
+  }
 }
 
 interface IinputUserData {
@@ -25,17 +29,22 @@ interface IinputUserData {
 }
 const findUniqueUser = (inputData: IinputUserData) => {
   const { id: inputId, email: inputEmail } = inputData;
-  const user = prisma.users.findUnique({
-    where: {
-      id: inputId,
-      email: inputEmail
-    },
-    select: { id: true },
-  });
-  if (user) {
-    return user
+  if (!inputId && !inputEmail) {
+    return false
+  } else {
+    const user = prisma.users.findUnique({
+      where: {
+        id: inputId,
+        email: inputEmail
+      },
+      select: { id: true },
+    });
+    if (user) {
+      return user
+    }
+    return false
   }
-  return false
+  
 }
 
 const deleteNewUser = (id: number) => {
