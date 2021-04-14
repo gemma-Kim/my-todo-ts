@@ -1,51 +1,46 @@
-import * as express from 'express';
-import * as dotenv from 'dotenv';
-import * as cors from 'cors';
-import * as logger from 'morgan';
-import * as expressSession from 'express-session';
-import * as cookieParser from 'cookie-parser';
-import * as passport from 'passport';
-import * as swaggerJsdoc from 'swagger-jsdoc';
-import * as swaggerUi from 'swagger-ui-express';
-import * as swaggerOptions from './swagger';
-import passportSetting from './auth';
-import router from './routes';
-import { prod } from './server';
+import * as express from 'express'
+import * as swaggerJsDoc from 'swagger-jsdoc'
+import * as swaggerUi from 'swagger-ui-express'
 
-dotenv.config();
-const app = express();
+import { userRouter } from './routes'
 
-// basic middlewear
-app.use(express.json());
-app.use(cookieParser(process.env.COOKIE_SECRET));
-app.use(express.urlencoded({ extended: false }));
-app.use(expressSession({
-  resave: false,
-  saveUninitialized: false,
-  secret: process.env.COOKIE_SECRET!,
-  cookie: {
-    httpOnly: true,
-    secure: false,
-  },
-}));
+const app = express()
 
-app.use(passport.initialize());
-app.use(passport.session());
-passportSetting();
-
-app.use(router);
-app.use(cors);
-app.use("/api-docs", 
-        swaggerUi.serve, 
-        swaggerUi.setup(swaggerJsdoc(swaggerOptions))
-        );
-
-// additional middelewear
-if (prod) {
-  app.use(logger('combined'));
-
-} else {
-  app.use(logger('dev'))
+const swggerOptions = {
+    swaggerDefinition: {
+        info: {
+            title: 'Express API',
+            version: '1.0.0',
+        },
+    },
+    apis: ['./src/app.ts', './src/routes/**.ts'],
 }
 
-export default app;
+const swaggerDocs = swaggerJsDoc(swggerOptions)
+console.log(swaggerDocs)
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+
+// /**
+//  * @swagger
+//  * /books:
+//  *  get:
+//  *      description: Get all books
+//  *      responses:
+//  *          200:
+//  *              description: Success
+//  */
+// app.get('/books', (req, res) => {
+//     res.send([
+//         {
+//             id: 1,
+//             title: 'Harry Potter'
+//         }
+//     ])
+// })
+
+app.use('/user', userRouter)
+
+app.listen(5000, () => { 
+    console.log('server start')
+})
