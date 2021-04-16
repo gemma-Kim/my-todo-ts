@@ -7,6 +7,12 @@ import { InferencePriority } from 'typescript';
 
 const userRouter = Router();
 
+/** 
+ * @swagger
+ * tags:
+ *  - name: User
+ */
+
 /**
  * @swagger
  * /user/signup:
