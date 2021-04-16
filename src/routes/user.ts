@@ -1,60 +1,112 @@
 
-import * as passport from 'passport';import { Router, Request, Response, NextFunction } from 'express';
+import * as passport from 'passport';
+import { Router, Request, Response, NextFunction } from 'express';
 import { isLoggedIn, isNotLoggedIn } from './middleware';
-import { userModel } from '../models';
+import { userModel, todoModel } from '../models';
 import { SignUpData } from '../validators/user'
 import { InferencePriority } from 'typescript';
 
 const userRouter = Router();
 
-/** 
- * @swagger
- * tags:
- *  - name: User
- */
-
 /**
  * @swagger
- * /user/signup:
- *   post:
- *    description: 회원가입
- *    parameters:
- *      - in: body
- *        type: object
- *        description: to create a new user
- *        schema:
- *          $ref: '#/components/schemas/User'
- *    responses:
- *     201:
- *      description: Created User
- *      schema:
- *       $ref: '#/components/schemas/Signup_Success'
- *     400:
- *      description: 이메일 형식 오류
- *      schema:
- *       $ref: '#/components/schemas/Error400'       
- *     403: 
- *       description: The user does already exist
- *       schema:
- *        $ref: '#/components/schemas/Error403'
- *     401:
- *      description: Invalid Email or Password
- *      schema:
- *        $ref: '#/components/schemas/Error401'
- *      examples:
- *       objectExample:
- *         $ref: '#/components/examples/objectExample'
+ * components:
  * 
- * components: 
- *  examples:
- *   objectExample:
- *     value:
- *       id: 1
- *       name: new object
- *     summary: A sample object
+ *  responses:
+ *   default:
+ *    type: object
+ *    properties:
+ *     error_message:
+ *      type: string
+ *   signup_success:
+ *    type: object
+ *    properties:
+ *     id:
+ *      type: integer
+ *      example: 1
+ *     email:
+ *      type: string
+ *      example: test@gmail.com
+ *     password:
+ *      type: string
+ *      nullable: true
+ *      example: null
+ *     created_at:
+ *      type: string
+ *      example: 2021-04-15T08:51:29.000Z
+ *     updated_at:
+ *      type: string
+ *      nullable: true
+ *      example: null
+ *     lists:
+ *      type: array
+ *      items: 
+ *       oneOf:
+ *        - $ref: '#/components/schemas/List'
+ *   login_success:
+ *    type: object
+ *    properties:
+ *     id:
+ *      type: integer
+ *      description: 사용자 id
+ *      example: 1
+ *     password:
+ *      type: string
+ *      description: 항상 null
+ *      example: null
+ *   get_user_success:
+ *    type: object
+ *    properties:
+ *     id:
+ *      type: integer
+ *      example: 1
+ *      description: 사용자 id
+ *     lists:
+ *      type: array
+ *      items:
+ *       type: object
+ *       properties:
+ *        id:
+ *         type: integer
+ *         description: list id
+ *        title:
+ *         type: string
+ *         description: list title
+ *      example:
+ *       - id: 1
+ *         title: Basic
+ *       - id: 2
+ *         title: Study
+ *     todos: 
+ *      type: array
+ *      items:
+ *       type: object
+ *       properties: 
+ *        id: 
+ *         type: integer
+ *         description: todo id
+ *         example: 1
+ *        list_id:
+ *         type: integer
+ *         description: list id of the todo
+ *         example: 1
+ *        content:
+ *         type: string
+ *         description: content of the todo
+ *         example: content
+ *      example:
+ *        - id: 1
+ *          list_id: 1
+ *          content: content 1
+ *        - id: 2
+ *          list_id: 1
+ *          content: content 2
+ *        - id: 3
+ *          list_id: 1
+ *          content: content 3
  * 
- *  schemas:
- *   User:
+ *  requestBodies:
+ *   user:
  *    type: object
  *    properties:
  *     email:
@@ -67,103 +119,95 @@ const userRouter = Router();
  *     email: test@gmail.com
  *     password: "12345678"
  * 
+ *  schemas:
  *   List:
  *    type: object
  *    properties:
  *     id:
  *      type: integer
+ *      example: 1
  *     user_id:
  *      type: integer
+ *      example: 1
  *     title:
- *      type: integer
+ *      type: string
+ *      example: Basic
  *     default:
  *      type: boolean
+ *      example: true
  *     is_deleted:
  *      type: boolean
+ *      example: false
  *     created_at:
  *      type: string
- *     updated_at:
- *      nullable: true
- *   example:
- *    id: 1
- *    user_id: 1
- *    title: Basic
- *    default: true
- *    is_deleted: false
- *    created_at: 2021-04-15T08:51:29.000Z
- *    updated_at: null
- * 
- *   Signup_Success:
- *    type: object
- *    properties:
- *     id:
- *      type: integer
- *     email:
- *      type: string
- *     password:
- *      type: string
- *      nullable: true
- *     created_at:
- *      type: string
+ *      example: 2021-04-15T08:51:29.000Z
  *     updated_at:
  *      type: string
- *      nullable: true
- *     lists:
- *      type: array
- *      items: 
- *       oneOf:
- *        - $ref: '#/components/schemas/List'
- *    example:
- *     id: 1
- *     email: test@gmail.com
- *     password: null
- *     created_at: 2021-04-15T08:51:29.000Z
- *     updated_at: null
- *     lists:
- *       - id: 1
- *         user_id: 1
- *         title: Basic
- *         default: true
- *         is_deleted: false
- *         created_at: 2021-04-15T08:51:29.000Z
- *         updated_at: null
+ *      example: null
  * 
- *   Error401:
- *    type: object
- *    properties:
- *     message:
- *      type: string
- *      required: true
- * 
- *   Error403:
- *    type: object
- *    properties:
- *     message:
- *      type: string
- *    example:
- *     message: '이미 존재하는 사용자 이메일 입니다.'
- * 
- *   Error400:
- *    type: object
- *    properties:
- *     message:
- *      type: string
- *      example: 아년
+ */
+
+
+/**
+ * @swagger 
+ * /user/signup:
+ *   post:
+ *    tags: 
+ *     - User
+ *    summary: 회원가입
+ *    requestBody:
+ *     description: 회원가입
+ *     required: true
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/requestBodies/user'
+ *    responses:
+ *     201:
+ *      description: 회원가입 성공
+ *      content:
+ *       application/json:
+ *        schema:
+ *         $ref: '#/components/responses/signup_success'     
+ *     400:
+ *      description: 잘못된 요청 값
+ *      content:
+ *       application/json:
+ *        schema:
+ *         $ref: '#/components/responses/default'
+ *        examples:
+ *         이메일 형식 오류:
+ *          value:
+ *           error_message: 이메일 형식이 올바르지 않습니다.
+ *         비밀번호 형식 오류:
+ *          value:
+ *           error_message: 비밀번호는 8자 이상이어야 합니다.
+ *         잘못된 요청:
+ *          value:
+ *           error_message: 잘못된 요청입니다.
+ *     403: 
+ *       description: 존재하는 사용자
+ *       content:
+ *        application/json:
+ *         schema:
+ *          $ref: '#/components/responses/default'
+ *         example:
+ *          error_message: 존재하는 사용자 입니다. 
  */
 userRouter.post('/signup', async (req: Request, res: Response, next: NextFunction) => {
     try {    
       const signupData = new SignUpData(req.body).isvalid()
       if (!signupData.result) {
-        return res.status(signupData.status).json({ 'message': signupData.message })
+        return res.status(signupData.status).json({ 'message': signupData.error_message })
       } else {
         if (await userModel.findUniqueUser(req.body)) {
-          return res.status(403).json({ 'message': '이미 존재하는 사용자 이메일 입니다.' })
+          return res.status(403).json({ 'error_message': '존재하는 사용자 입니다.' })
         } else {
           const newUser = await userModel.createNewUser(req.body.email, req.body.password);
           if (newUser) {
             return res.status(201).json({ ...newUser, password: null })
           } else {
-            return res.status(400).json({ 'message': '알 수 없는 이유로 회원가입이 불가합니다.' })
+            return res.status(400).json({ 'error_message': '잘못된 요청입니다.' })
           }
         }
       }
@@ -179,97 +223,189 @@ userRouter.post('/signup', async (req: Request, res: Response, next: NextFunctio
  * @swagger
  * /user/login:
  *  post:
+ *   tags: 
+ *    - User
  *   description: 로그인
- *   summary: 로그인 & 인증 쿠키 발급
+ *   summary: 로그인 & 인증 세션 발급
  *   requestBody:
  *    required: true
- *    description: A JSON object containing the login and password.
  *    content:
- *      application/json:
- *        schema:
- *          $ref: '#/components/schemas/Login_Success'
- *   parameters:
- *    - in: body
- *      type: object
+ *     application/json:
  *      schema:
- *       $ref: '#/components/schemas/User'
+ *       $ref: '#/components/requestBodies/user'
  *   responses:
  *    200:
- *     description: Success
- *     schema:
- *      $ref: '#/components/schemas/Login_Success'
+ *     description: 로그인 성공
+ *     headers:
+ *      Set-Cookie:
+ *       schema:
+ *        type: string
+ *        example: connect.sid=s%3AisbSjtZ7sE0avgRiKcgHm-vbUTOivbPZ.gApy0CtBLxVoBKVsVngYl1Qm42Tp08J5OdpVhZQ6usQ; Path=/; HttpOnly
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/login_success'    
  *    400:
- *     description: Bad Request
- *     schema:
- *      $ref: '#/components/schemas/Error401'
- * 
- * components:
- *  schemas:
- *   Login_Success:
- *    type: object
- *    properties:
- *     id:
- *      type: integer
- *      description: User ID
+ *     description: 잘못된 요청
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/default'
+ *       examples:
+ *        비밀번호 틀림:
+ *         value:
+ *          error_message: 비밀번호가 잘못되었습니다.
+ *        잘못된 요청:
+ *         description: 이메일, 비밀번호 값이 없는 경우
+ *         value:
+ *          error_message: key_error
+ *    403:
+ *     description: 인증된 사용자
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/default'
+ *       example:
+ *        error_message: 로그인한 사용자는 접근할 수 없습니다.    
+ *    404:
+ *     description: 존재하지 않는 사용자
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/default'
+ *       example:
+ *        error_message: 존재하지 않는 사용자입니다.
  */
  userRouter.post('/login', isNotLoggedIn, (req: Request, res: Response, next: NextFunction) => {
-  passport.authenticate('local', (err: Error, user, info: { message: string }) => {
-    if (info) {
-      console.log('0000')
-        return res.status(400).json(info)
-    }
-    if (err) {
-      console.error(err);
-      return next(err);
-    }
-    return req.login(user, async (loginErr: Error) => {
-      try {
-        if (loginErr) {
-          return next(loginErr);
+  if (req.body.email && req.body.password) {
+    passport.authenticate('local', (err: Error, user, info: { message: string }) => {
+      if (info) {
+        if (info.message === "존재하지 않는 사용자입니다.") {
+          return res.status(404).json(info)
+        } else {
+          return res.status(400).json(info)
         }
-        return res.status(200).json({ ...user, password: null })
-      } catch (err) {
-        console.error(err);
-        next(err);
       }
-    });
-  })(req, res, next);
+      if (err) {
+        console.error(err);
+        return next(err);
+      }
+      return req.login(user, async (loginErr: Error) => {
+        try {
+          if (loginErr) {
+            return next(loginErr);
+          } else {
+            return res.status(200).json({ ...user, password: null })
+          }
+        } catch (err) {
+          console.error(err);
+          next(err);
+        }
+      });
+    })(req, res, next);
+  } else {
+    return res.status(400).json({ 'error_message': 'key_error' })
+  }
 });
 
 /**
  * @swagger
  * /user/logout:
  *  post:
- *   description: 로그인
+ *   tags:
+ *    - User
+ *   description: 로그아웃
+ *   summary: 인증 세션 삭제
  *   parameters:
- *    - in: body
- *      type: object
+ *    - in: cookie
+ *      name: connect.sid
  *      schema:
- *       $ref: '#/components/schemas/User'
+ *       type: string
  *   responses:
  *    200:
- *     description: Success
- *     schema:
- *      $ref: '#/components/schemas/Logout_Success'
- *    400:
- *     description: Bad Request
- *     schema:
- *      $ref: '#/components/schemas/Error'
- * 
- * components:
- *  schemas:
- *   Logout_Success:
- *    type: object
- *    properties:
- *     id:
- *      type: integer
- *      description: User ID
+ *     description: 로그아웃 성공
+ *    401:
+ *     description: 인증되지 않은 사용자
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#components/responses/default'
+ *       example:
+ *        error_message: 로그인이 필요합니다.
  */
 userRouter.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextFunction) => {
   req.logout();
   req.session.destroy(() => {
-    res.status(200).json('success to logout');
+    return res.status(200).end();
   });
+})
+
+
+/**
+ * @swagger
+ * /user/{user_id}?:
+ *  get:
+ *   tags:
+ *    - User
+ *   description: 기본 Todo & List 정보 조회
+ *   parameters:
+ *    - in: cookie
+ *      name: connect.sid
+ *      schema:
+ *       type: string
+ *    - in: path
+ *      name: user_id
+ *      required: true
+ *      schema:
+ *       type: integer
+ *    - in: query
+ *      name: offset
+ *      required: true
+ *      schema:
+ *       type: integer
+ *    - in: query
+ *      name: limit
+ *      required: true
+ *      schema:
+ *       type: integer
+ *   responses:
+ *    200:
+ *     description: 조회 성공
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/get_user_success'
+ * */
+userRouter.get('/:user_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    if (req.user) {
+      if (req.user.id === Number(req.params.user_id)) {
+        if (req.query.offset && req.query.limit) {
+          if (req.query.offset >= req.query.limit) {
+            return res.status(400).json({ 'error_message': 'limit should be greater than offset' })
+          } else {
+            const user = await userModel.findUniqueUser({ id: req.user.id })
+            if (!user) {
+              return res.status(404).json({ 'error_message': '해당 사용자는 존재하지 않는 사용자입니다.' })
+            } else {
+              const todoData = await todoModel.getUserTodo(Number(req.user.id), Number(req.query.offset), Number(req.query.limit))
+              return res.status(200).json(todoData[0])
+            }
+          }
+        } else {
+          return res.status(400).json({ 'error_message': '잘못된 요청입니다.'})
+        }
+      } else {
+        return res.status(403).json({ 'error_message': '다른 사용자의 정보에 접근할 수 없습니다.'})
+      }
+    } else {
+      return res.status(400).json({ 'error_message': '잘못된 요청입니다.'})
+    }
+    
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
 })
 
 export default userRouter
