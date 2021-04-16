@@ -17,10 +17,10 @@ const addTodo = (data: IinputTodoData) => {
   })
 }
 
-const getUserTodo = async (userId: number, offset: number, limit: number) => {
+const getUserTodo = async (id: number, offset: number, limit: number) => {
   return prisma.users.findMany({
     where: {
-      id: userId,
+      id
     },
     select: {
       id: true,

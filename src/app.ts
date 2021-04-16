@@ -33,6 +33,7 @@ passportSetting();
 // swagger options
 const swggerOptions = {
     swaggerDefinition: {
+      openapi: "3.0.0",
       components: {},
       info: {
           title: 'My todo API',
@@ -48,7 +49,7 @@ console.log(swaggerDocs)
 // routers
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/user', userRouter)
-app.use('/user', todoRouter)
+app.use('/todo', todoRouter)
 app.use(cors);
 
 export default app

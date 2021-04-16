@@ -19,8 +19,9 @@ export default () => {
             console.error(err)
             return done(null, false)
           }
-          if (!result) return done(null, false, { message: "비밀번호가 잘못되었습니다." })
-          else {
+          if (!result) {
+            return done(null, false, { message: "비밀번호가 잘못되었습니다." })
+          } else {
             return done(null, user)
           }
         })
