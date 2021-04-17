@@ -40,7 +40,7 @@ const swggerOptions = {
           version: '1.0.0',
       },
     },
-    apis: ['./src/routes/**.ts'],
+    apis: ['./src/routes/user.ts', './src/routes/todo.ts'],
 }
 
 const swaggerDocs = swaggerJsDoc(swggerOptions)

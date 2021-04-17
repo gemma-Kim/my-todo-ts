@@ -5,7 +5,21 @@ import { isLoggedIn } from './middleware';
 
 const todoRouter = express.Router();
 
-// add todo list
+/**
+ * @swagger
+ * /todo:
+ *  post:
+ *   tags: 
+ *    - Todo
+ *   description: 할 일 추가
+ *   sumarary: 할 일 추가
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:   
+ *      schema:
+ *       $ref: '#/components/requestBodies/todo'
+ */
 todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
     try {
       // need 'list_id', 'content' in req.body

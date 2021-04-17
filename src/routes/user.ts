@@ -375,6 +375,45 @@ userRouter.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextF
  *      application/json:
  *       schema:
  *        $ref: '#/components/responses/get_user_success'
+ *    400:
+ *     description: 잘못된 요청
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/default'
+ *       examples:
+ *        비밀번호 틀림:
+ *         description: offset, limit 파라미터 값이 없는 경우
+ *         value:
+ *          error_message: limit should be greater than offset
+ *        잘못된 요청:
+ *         description: 파라미터가 전달되지 않은 경우
+ *         value:
+ *          error_message: 잘못된 요청입니다.
+ *    401:
+ *     description: 인증되지 않은 사용자
+ *     content:
+ *      application/json:
+ *       schema: 
+ *        $ref: '#/components/responses/default'
+ *       example:
+ *        error_message: 로그인이 필요합니다.
+ *    403:
+ *     description: 로그인 한 사용자와 parameter user_id가 같지 않은 경우
+ *     content:
+ *      application/json:
+ *       schema:
+ *        $ref: '#/components/responses/default'
+ *       example:
+ *        error_message: 다른 사용자의 정보에 접근할 수 없습니다.
+ *    404:
+ *     description: 존재하지 않은 사용자 정보에 접근하는 경우
+ *     content:
+ *      application/json:
+ *       schema: 
+ *        $ref: '#/components/responses/default'
+ *       example:
+ *        error_message: 해당 사용자는 존재하지 않는 사용자입니다.
  * */
 userRouter.get('/:user_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
   try {
