@@ -11,7 +11,6 @@ const userRouter = Router();
 /**
  * @swagger
  * components:
- * 
  *  responses:
  *   default:
  *    type: object
@@ -104,6 +103,12 @@ const userRouter = Router();
  *        - id: 3
  *          list_id: 1
  *          content: content 3
+ *   add_todo_success:
+ *    type: object
+ *    properties:
+ *     id: 
+ *      type: integer
+ *      
  * 
  *  requestBodies:
  *   user:
@@ -118,6 +123,18 @@ const userRouter = Router();
  *    example:
  *     email: test@gmail.com
  *     password: "12345678"
+ *   todo:
+ *    type: object
+ *    properties:
+ *     list_id:
+ *      type: integer
+ *      required: true
+ *     content:
+ *      type: string
+ *      required: true
+ *    example:
+ *     list_id: 1
+ *     content: 운동하기
  * 
  *  schemas:
  *   List:
