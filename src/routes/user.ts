@@ -374,6 +374,7 @@ userRouter.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextF
  *  get:
  *   tags:
  *    - User
+ *   summary: 사용자 기본 할 일 및 리스트 조회
  *   description: 기본 Todo & List 정보 조회
  *   parameters:
  *    - in: cookie
@@ -383,6 +384,11 @@ userRouter.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextF
  *    - in: path
  *      name: user_id
  *      required: true
+ *      schema:
+ *       type: integer
+ *    - in: path
+ *      name: list_id
+ *      required: false
  *      schema:
  *       type: integer
  *    - in: query

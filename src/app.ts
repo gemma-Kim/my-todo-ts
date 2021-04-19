@@ -51,7 +51,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 app.use('/user', userRouter)
 app.use('/todo', todoRouter)
 
-// not found error
+// not found (404) error handler
 app.use((req, res, next) => {
   return res.status(404).send('Sorry cant find that!');
 });

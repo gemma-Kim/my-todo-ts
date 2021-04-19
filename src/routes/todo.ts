@@ -11,13 +11,13 @@ const todoRouter = express.Router();
  *  post:
  *   tags: 
  *    - Todo
- *   description: 할 일 추가
+ *   description: 새로운 todo 추가
+ *   summary: 할 일 추가
  *   parameters:
  *    - in: cookie
  *      name: connect.sid
  *      schema:
  *       type: string
- *   sumarary: 할 일 추가
  *   requestBody:
  *    required: true
  *    content:
@@ -25,13 +25,13 @@ const todoRouter = express.Router();
  *      schema:
  *       $ref: '#/components/requestBodies/todo'
  *   responses:
- *    '200':
+ *    201:
  *     description: todo 추가 성공
  *     content:
  *      application/json:
  *       schema:
  *        $ref: '#/components/responses/add_todo_success'
- *    '400':
+ *    400:
  *     description: 잘못된 요청
  *     content:
  *      application/json:
@@ -44,7 +44,7 @@ const todoRouter = express.Router();
  *         할일이 생성되지 않음:
  *          value:
  *           error_message: no created new todo
- *    '401':
+ *    401:
  *     description: 인증되지 않은 사용자
  *     content:
  *      application/json:
@@ -52,7 +52,7 @@ const todoRouter = express.Router();
  *        $ref: '#/components/responses/default'
  *       example:
  *        error_message: 로그인이 필요합니다.
- *    '404':
+ *    404:
  *     description: 추가할 할 일의 content, list_id 값이 없음
  *     content:
  *      application/json:
@@ -69,7 +69,7 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
           const data = {...req.body, user_id: req.user.id}
           const newTodo = await todoModel.addTodo(data)
           if (newTodo) {
-            return res.status(200).json(newTodo)
+            return res.status(201).json(newTodo)
           } else {
             return res.status(400).json({ 'error_message': 'no created new todo' })
           }
@@ -93,8 +93,8 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
  *   patch:
  *    tags:
  *     - Todo
- *    description: 할 일 수정
  *    summary: 할 일 수정
+ *    description: todo의 리스트, 내용, 삭제 여부를 수정. 내용 이외의 리스트, 삭제 여부는 여러 개를 한 꺼번에 수정 가능
  *    parameters:
  *     - in: cookie
  *       name: connect.sid
@@ -132,9 +132,9 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
  *         value:
  *          is_deleted: false
  *    responses:
- *     '200':
+ *     204:
  *      description: 업데이트 성공
- *     '400':
+ *     400:
  *      description: 업데이트 된 정보 없음
  *      content:
  *       application/json:
@@ -142,7 +142,7 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
  *         $ref: '#/components/responses/default'
  *        example:
  *         error_message: no updated todo item
- *     '401':
+ *     401:
  *      description: 인증되지 않은 사용자
  *      content:
  *       application/json:
@@ -150,7 +150,7 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
  *         $ref: '#/components/responses/default'
  *        example:
  *         error_message: 로그인이 필요합니다.
- *     '404':
+ *     404:
  *      description: 업데이트할 정보 없음
  *      content:
  *       application/json:
@@ -169,7 +169,7 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
       } = { content: req.body.content }
       const updatedData = await todoModel.modifyTodo(todos, data)
       if (updatedData && Number(updatedData.count) === todos.length) {
-        return res.status(200).end()
+        return res.status(204).end()
       } else {
         return res.status(400).json({ 'error_message': 'no updated todo item' })
       }
@@ -179,7 +179,7 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
       } = { list_id: req.body.list_id}
       const updatedData = await todoModel.modifyTodo(todos, data)
       if (updatedData && Number(updatedData.count) === todos.length) {
-        return res.status(200).end()
+        return res.status(204).end()
       } else {
         return res.status(400).json({ 'error_message': 'no updated todo item' })
       }
@@ -189,7 +189,7 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
       } = { is_deleted: false }
       const updatedData = await todoModel.modifyTodo(todos, data)
       if (updatedData && Number(updatedData.count) === todos.length) {
-        return res.status(200).end()
+        return res.status(204).end()
       } else {
         return res.status(400).json({ 'error_message': 'no updated todo item' })
       }
@@ -207,7 +207,8 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
  * @swagger
  *  /todo:
  *   delete:
- *    description: 할 일 영구 삭제 (복수 가능)
+ *    summary: 할 일 영구 삭제
+ *    description: 여러 할 일들을 영구히 삭제함
  *    tags:
  *     - Todo
  *    parameters:
@@ -229,9 +230,9 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
  *           type: integer
  *          example: [1, 2, 3]
  *    responses:
- *     '200':
+ *     204:
  *      description: 성공
- *     '400':
+ *     400:
  *      description: 삭제된 할 일 없음
  *      content:
  *       application/json:
@@ -239,7 +240,7 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
  *         $ref: '#/components/responses/default'
  *        example:
  *         error_message: no deleted todo item
- *     '401':
+ *     401:
  *      description: 인증되지 않은 사용자
  *      content:
  *       application/json:
@@ -247,8 +248,8 @@ todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, ne
  *         $ref: '#/components/responses/default'
  *        example:
  *         error_message: 로그인이 필요합니다.
- *     '404':
- *      description: 업데이트 가능한 할 일 목록 없음
+ *     404:
+ *      description: 삭제 가능한 할 일 목록 없음
  *      content:
  *       application/json:
  *        schema:
@@ -261,13 +262,13 @@ todoRouter.delete('', isLoggedIn, async (req: Request, res: Response, next: Next
     if (req.body.todo_id) {
       const result = await todoModel.deleteTodos(req.body.todo_id)
       if (result.count && Number(result.count) === req.body.todo_id.length) {
-        return res.status(200).end()
+        return res.status(204).end()
       } else {
         return res.status(400).json({ 'error_message': 'no deleted todo item' })
       }
       
     } else {
-      return res.status(404).json({ 'error_message': 'no todo item to delete' })
+      return res.status(400).json({ 'error_message': 'no todo item to delete' })
     }
 
   } catch (err) {
