@@ -43,7 +43,7 @@ const getUserTodo = async (id: number, offset: number, limit: number) => {
           }
         },
         orderBy: {
-          created_at: 'desc',
+          created_at: 'asc',
         }
         
       }
@@ -52,95 +52,43 @@ const getUserTodo = async (id: number, offset: number, limit: number) => {
 }
 
 interface IModifyTodoData1 {
-  id: number
   content: string
 } 
 interface IModifyTodoData2 {
-  id: number[]
   list_id: number
 }
 interface IModifyTodoData3 {
-  id: number[]
   is_deleted: boolean
 }
-const modifyTodo = (data: IModifyTodoData1 | IModifyTodoData2 | IModifyTodoData3) => {
+const modifyTodo = (id: number[], data: IModifyTodoData1 | IModifyTodoData2 | IModifyTodoData3) => {
   try {
-    if ("content" in data) {
-      const { id, content } = data
-      return prisma.todos.update({
-        where: {
-          id
-        },
-        data: {
-          content,
-          updated_at: new Date()
-        },
-        select: {
-          id: true,
-          list_id: true,
-          content: true
-        }
+    return prisma.todos.updateMany({
+          where: {
+            is_deleted: false,
+            id: {
+              in: id
+            }
+          },
+          data: {
+            ...data,
+            updated_at: new Date()
+          }
       })
-    } else if ("list_id" in data ) {
-      const { id, list_id } = data
-      if (list_id) {
-        return prisma.todos.updateMany({
-          where: {
-            is_deleted: false,
-            id: {
-              in: id
-            }
-          }, 
-          data: {
-            list_id,
-            updated_at: new Date()
-          },
-        })
-      }
-    } else if ("is_deleted" in data) {
-      const { id, is_deleted } = data
-      if (is_deleted === false) {
-        return prisma.todos.updateMany({
-          where: {
-            is_deleted: false,
-            id: {
-              in: id
-            }
-          }, 
-          data: {
-            is_deleted: true,
-            updated_at: new Date()
-          },
-        })
-      } 
-    } else {
-      return null
-    }    
+
   } catch (err) {
     console.error(err)
   }
 }
 
-const deleteTodos = (todoIds: number[], is_deleted: boolean) => {
-  // it's already removed
-  if (is_deleted) {
-    return prisma.todos.deleteMany({
-      where: {
-        id: { in: todoIds },
+
+const deleteTodos = (todo_id: number[]) => {
+  return prisma.todos.deleteMany({
+    where: {
+      id: { 
+        in: todo_id 
       },
-    })
-  } else {
-    // remove them
-    return prisma.todos.updateMany({
-      where: {
-        id: { in: todoIds },
-      },
-      data: {
-        is_deleted: true
-      }
-    })
-  }
-  
+    },
+  })
 }
 
 export {

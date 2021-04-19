@@ -132,18 +132,6 @@ const userRouter = Router();
  *    example:
  *     list_id: 1
  *     content: 운동하기
- *   todo_modify:
- *    type: object
- *    properties:
- *     list_id: 
- *      type: array
- *     content:
- *      type: string
- *     is_deleted:
- *      type: boolean
- *    examples:
- *     oneOf:
- *      list_id
  *   list_id:
  *    type: object
  *    properties:
@@ -157,7 +145,6 @@ const userRouter = Router();
  *      type: string
  *      example: 새로운 할 일
  * 
- *     
  * 
  *  schemas:
  *   List:
