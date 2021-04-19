@@ -84,15 +84,12 @@ const userRouter = Router();
  *        id: 
  *         type: integer
  *         description: todo id
- *         example: 1
  *        list_id:
  *         type: integer
  *         description: list id of the todo
- *         example: 1
  *        content:
  *         type: string
  *         description: content of the todo
- *         example: content
  *      example:
  *        - id: 1
  *          list_id: 1
@@ -135,6 +132,32 @@ const userRouter = Router();
  *    example:
  *     list_id: 1
  *     content: 운동하기
+ *   todo_modify:
+ *    type: object
+ *    properties:
+ *     list_id: 
+ *      type: array
+ *     content:
+ *      type: string
+ *     is_deleted:
+ *      type: boolean
+ *    examples:
+ *     oneOf:
+ *      list_id
+ *   list_id:
+ *    type: object
+ *    properties:
+ *     list_id:
+ *      type: integer
+ *      example: 1
+ *   content:
+ *    type: object
+ *    properties:
+ *     content:
+ *      type: string
+ *      example: 새로운 할 일
+ * 
+ *     
  * 
  *  schemas:
  *   List:

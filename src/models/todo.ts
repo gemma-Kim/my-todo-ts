@@ -51,30 +51,71 @@ const getUserTodo = async (id: number, offset: number, limit: number) => {
   })
 }
 
-interface IModifyTodoData {
+interface IModifyTodoData1 {
   id: number
-  list_id?: number 
-  content?: string
-  is_deleted?: boolean
+  content: string
+} 
+interface IModifyTodoData2 {
+  id: number[]
+  list_id: number
 }
-const modifyTodo = (data: IModifyTodoData) => {
+interface IModifyTodoData3 {
+  id: number[]
+  is_deleted: boolean
+}
+const modifyTodo = (data: IModifyTodoData1 | IModifyTodoData2 | IModifyTodoData3) => {
   try {
-    const { id } = data
-    return prisma.todos.update({
-      where: {
-        id,
-      },
-      data: {
-        ...data,
-        updated_at: new Date()
-      },
-      select: {
-        id: true,
-        content: ("content" in data ? true : false),
-        list_id: ("list_id" in data ? true : false),
+    if ("content" in data) {
+      const { id, content } = data
+      return prisma.todos.update({
+        where: {
+          id
+        },
+        data: {
+          content,
+          updated_at: new Date()
+        },
+        select: {
+          id: true,
+          list_id: true,
+          content: true
+        }
+      })
+    } else if ("list_id" in data ) {
+      const { id, list_id } = data
+      if (list_id) {
+        return prisma.todos.updateMany({
+          where: {
+            is_deleted: false,
+            id: {
+              in: id
+            }
+          }, 
+          data: {
+            list_id,
+            updated_at: new Date()
+          },
+        })
       }
-    })
-
+    } else if ("is_deleted" in data) {
+      const { id, is_deleted } = data
+      if (is_deleted === false) {
+        return prisma.todos.updateMany({
+          where: {
+            is_deleted: false,
+            id: {
+              in: id
+            }
+          }, 
+          data: {
+            is_deleted: true,
+            updated_at: new Date()
+          },
+        })
+      } 
+    } else {
+      return null
+    }    
   } catch (err) {
     console.error(err)
   }

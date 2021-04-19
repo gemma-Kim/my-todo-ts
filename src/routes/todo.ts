@@ -93,27 +93,86 @@ todoRouter.post('', isLoggedIn, async (req: Request, res: Response, next: NextFu
  *   patch:
  *    tags:
  *     - Todo
- */
-todoRouter.patch('/:todo_id', isLoggedIn, async (req: Request, res: Response, next: NextFunction) => {
+ *    description: 할 일 수정
+ *    summary: 할 일 수정
+ *    parameters:
+ *     - in: cookie
+ *       name: connect.sid
+ *       summary: 사용자 인증 세션 아이디
+ *       schema:
+ *        type: string
+ *       required: true
+ *     - in: path
+ *       name: todo_id
+ *       description: 수정할 할 일 아이디
+ *       schema:
+ *        type: string
+ *       required: true
+ *       examples: 
+ *        단수인 경우:
+ *         value: 1
+ *        복수인 경우:
+ *         value: 1,2 (띄어쓰기 X)
+ *    requestBody:
+ *     required: true
+ *     content:
+ *      application/json:
+ *       schema:
+ *        oneOf:
+ *         - $ref: '#/components/requestBodies/list_id'
+ *         - $ref: '#/components/requestBodies/content'
+ *       examples:
+ *        리스트 변경인 경우:
+ *         value:
+ *          list_id: 1
+ *        내용 변경인 경우:
+ *         value:
+ *          content: 새로운 할 일
+ *        반영구 삭제인 경우:
+ *         value:
+ *          is_deleted: false
+ */        
+todoRouter.patch('/:todo_id', async (req: Request, res: Response, next: NextFunction) => {
   try {
     // list_id or content or is_deleted in req.body
-    if (req.body.list_id || req.body.content || req.body.is_deleted) {
-      if ("content" in req.body && !req.body.content) {
-        return res.status(400).json( 'no todo content to update' )
-        
+    const todos = req.params.todo_id.split(',').map(x => Number(x))
+    if (req.body.content) {
+      const data: {
+        content: string
+        id: number
+      } = { content: req.body.content, id: todos[0] }
+      const newTodoData = await todoModel.modifyTodo(data)
+      if (newTodoData) {
+        return res.status(200).json(newTodoData)
       } else {
-        const data = { ...req.body, id: Number(req.params.todo_id) }
-        const newTodoData = await todoModel.modifyTodo(data)
-        if (newTodoData) {
-          return res.status(200).json(newTodoData)
-        }
-        return res.status(400).json( 'no updated todo item' )
+        return res.status(400).json({ 'error_message': 'no updated todo item' })
       }
-      
+    } else if (req.body.list_id) {
+      const data: {
+        list_id: number
+        id: number[]
+      } = { list_id: req.body.list_id, id: todos }
+      const newTodoData = await todoModel.modifyTodo(data)
+      if (newTodoData) {
+        return res.status(200).json(newTodoData)
+      } else {
+        return res.status(400).json({ 'error_message': 'no updated todo item' })
+      }
+    } else if (req.body.is_deleted === false) {
+      const data: {
+        is_deleted: boolean
+        id: number[]
+      } = { is_deleted: false, id: todos }
+      const newTodoData = await todoModel.modifyTodo(data)
+      if (newTodoData) {
+        return res.status(200).json(newTodoData)
+      } else {
+        return res.status(400).json({ 'error_message': 'no updated todo item' })
+      }
     } else {
-      return res.status(400).json( 'no todo item to update' )
+      return res.status(404).json({ 'error_message': 'no data to update' })
     }
-    
+
   } catch (err) {
     console.error(err)
     next(err)
